@@ -3,7 +3,6 @@ import { Dimensions } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { styled } from 'nativewind';
 import { PieChart, StackedBarChart, ContributionGraph } from 'react-native-chart-kit';
-import NavBar from '../components/NavBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const StyledView = styled(View);
@@ -93,11 +92,10 @@ const data = [
     },
 ];
 
-export default HomePage = ({navigation}) => {
+export default BudgetPage = () => {
   return (
     <StyledView className='flex-1 flex-col justify-center align-top bg-scarlet-gum-500'>
-      <StatusBar style='auto' />
-      <NavBar navigation={navigation} />
+    <StatusBar style='auto' />
       <StyledView className='min-w-full flex-row align-middle justify-evenly pt-8'>
         <StyledPressable
           className="p-2 w-3/12 bg-scarlet-gum-700 rounded-lg"
@@ -140,7 +138,7 @@ export default HomePage = ({navigation}) => {
         paddingLeft={"15"}
         absolute
       />
-      {/* <StackedBarChart
+      <StackedBarChart
         data={dataBar}
         width={winWidth}
         height={220}
@@ -153,7 +151,7 @@ export default HomePage = ({navigation}) => {
         width={winWidth}
         height={220}
         chartConfig={chartConfig}
-      /> */}
+      />
     </StyledView>
   );
 }
