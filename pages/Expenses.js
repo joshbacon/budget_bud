@@ -10,7 +10,7 @@ const StyledPressable = styled(Pressable);
 
 export default ExpensesPage = ({navigation}) => {
     return (
-        <StyledView className='pt-6 min-w-screen min-h-screen flex-col justify-start align-middle bg-scarlet-gum-500'>
+        <StyledView className='pt-6 flex-1 justify-start align-middle bg-scarlet-gum-500'>
             <StatusBar style='auto' />
             <ExpenseItem />
             <StyledPressable

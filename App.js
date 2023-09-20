@@ -1,11 +1,11 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator  } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import HomePage from './pages/Home';
 import ExpensesPage from './pages/Expenses';
-import EnterPage from './pages/Enter';
 import BudgetPage from './pages/Budget';
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator ();
 
 export default function App() {
   return (
@@ -16,15 +16,62 @@ export default function App() {
           ...DefaultTheme.colors,
           text: '#ecdff0',
           card: '#431A60',
+          background: '#431a60',
         }
       }}
     >
-      <Stack.Navigator>
-        <Stack.Screen name='Overview' component={HomePage}/>
-        <Stack.Screen name='Expenses' component={ExpensesPage}/>
-        <Stack.Screen name='Enter Item' component={EnterPage}/>
-        <Stack.Screen name='Budget' component={BudgetPage}/>
-      </Stack.Navigator>
+      <Tab.Navigator initialRouteName='Overview'>
+        <Tab.Screen
+          name='Overview'
+          tabBarLabelPosition={'beside-icon'}
+          component={HomePage}
+          options={{
+            tabBarActiveTintColor: '#ecdff0',
+            tabBarIcon: ({color, size}) => (
+              <Icon
+                name='dashboard'
+                size={size}
+                color={color}
+                backgroundColor={"#0000"}
+                underlayColor={"#0000"}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name='Expenses'
+          component={ExpensesPage}
+          options={{
+            tabBarActiveTintColor: '#ecdff0',
+            tabBarIcon: ({color, size}) => (
+              <Icon
+                name='list-alt'
+                size={size}
+                color={color}
+                backgroundColor={"#0000"}
+                underlayColor={"#0000"}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name='Budget'
+          tabBarLabelPosition={'beside-icon'}
+          component={BudgetPage}
+          options={{
+            tabBarActiveTintColor: '#ecdff0',
+            tabBarIcon: ({color, size}) => (
+              <Icon
+                name='book'
+                size={size}
+                color={color}
+                backgroundColor={"#0000"}
+                underlayColor={"#0000"}
+              />
+            ),
+          }}
+        />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 }

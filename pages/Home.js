@@ -3,7 +3,6 @@ import { Dimensions } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { styled } from 'nativewind';
 import { PieChart, StackedBarChart, ContributionGraph } from 'react-native-chart-kit';
-import NavBar from '../components/NavBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const StyledView = styled(View);
@@ -21,6 +20,7 @@ const chartConfig = {
     color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
     strokeWidth: 2, // optional, default 3
     barPercentage: 0.5,
+    decimalPlaces: 0,
     useShadowColorFromDataset: false // optional
 };
 
@@ -93,12 +93,11 @@ const data = [
     },
 ];
 
-export default HomePage = ({navigation}) => {
+export default HomePage = () => {
   return (
-    <StyledView className='flex-1 flex-col justify-center align-top bg-scarlet-gum-500'>
+    <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
       <StatusBar style='auto' />
-      <NavBar navigation={navigation} />
-      <StyledView className='min-w-full flex-row align-middle justify-evenly pt-8'>
+      <StyledView className='min-w-full flex-row align-middle justify-evenly pt-5'>
         <StyledPressable
           className="p-2 w-3/12 bg-scarlet-gum-700 rounded-lg"
           onPress={() => {
@@ -133,20 +132,33 @@ export default HomePage = ({navigation}) => {
       <PieChart
         data={data}
         accessor={'amount'}
-        width={winWidth}
+        width={winWidth * 0.9}
         height={200}
         chartConfig={chartConfig}
         backgroundColor={'transparent'}
         paddingLeft={"15"}
         absolute
       />
-      {/* <StackedBarChart
+      <StackedBarChart
         data={dataBar}
-        width={winWidth}
+        width={winWidth * 0.9}
         height={220}
         chartConfig={chartConfig}
       />
-      <ContributionGraph
+      <StyledView className='flex-1 flex-row justify-evenly items-center w-screen'>
+
+        <StyledView className=''>
+          <StyledText className='text-center text-base text-scarlet-gum-100'>Total:</StyledText>
+          <StyledText className='text-center text-2xl text-scarlet-gum-100'>$497.23</StyledText>
+        </StyledView>
+
+        <StyledView className=''>
+          <StyledText className='text-center text-2xl text-scarlet-gum-100'>30% less</StyledText>
+          <StyledText className='text-center text-base text-scarlet-gum-100'>than last period</StyledText>
+        </StyledView>
+      
+      </StyledView>
+      {/* <ContributionGraph
         values={spendDates}
         endDate={new Date("2023-09-30")}
         numDays={105}
