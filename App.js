@@ -1,11 +1,21 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator  } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from "@react-navigation/stack";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import HomePage from './pages/Home';
 import ExpensesPage from './pages/Expenses';
+import EnterPage from './pages/Enter';
 import BudgetPage from './pages/Budget';
 
 const Tab = createBottomTabNavigator ();
+const Stack = createStackNavigator();
+
+const ExpenseStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen name='list' component={ExpensesPage}/>
+    <Stack.Screen name='add' component={EnterPage}/>
+  </Stack.Navigator>
+);
 
 export default function App() {
   return (
@@ -23,7 +33,6 @@ export default function App() {
       <Tab.Navigator initialRouteName='Overview'>
         <Tab.Screen
           name='Overview'
-          tabBarLabelPosition={'beside-icon'}
           component={HomePage}
           options={{
             tabBarActiveTintColor: '#ecdff0',
@@ -40,7 +49,7 @@ export default function App() {
         />
         <Tab.Screen
           name='Expenses'
-          component={ExpensesPage}
+          component={ExpenseStack}
           options={{
             tabBarActiveTintColor: '#ecdff0',
             tabBarIcon: ({color, size}) => (
@@ -56,7 +65,6 @@ export default function App() {
         />
         <Tab.Screen
           name='Budget'
-          tabBarLabelPosition={'beside-icon'}
           component={BudgetPage}
           options={{
             tabBarActiveTintColor: '#ecdff0',

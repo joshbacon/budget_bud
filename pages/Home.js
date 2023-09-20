@@ -145,6 +145,7 @@ export default HomePage = () => {
         height={220}
         chartConfig={chartConfig}
       />
+      {/* have it so you can scroll between the stacked bar and a bezier curve of the sums */}
       <StyledView className='flex-1 flex-row justify-evenly items-center w-screen'>
 
         <StyledView className=''>
@@ -158,14 +159,6 @@ export default HomePage = () => {
         </StyledView>
       
       </StyledView>
-      {/* <ContributionGraph
-        values={spendDates}
-        endDate={new Date("2023-09-30")}
-        numDays={105}
-        width={winWidth}
-        height={220}
-        chartConfig={chartConfig}
-      /> */}
     </StyledView>
   );
 }
