@@ -1,9 +1,11 @@
 export default class Item {
 
     Item(data) {
+        this.name = data.name
         this.amount = parseFloat(data.amount);
         this.date = Date.parse(data.date);
-        this.type = data.type;
+        this.category = data.category;
+        this.subCategory = data.subCategory;
         this.priority = data.priority;
     }
 

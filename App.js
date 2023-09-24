@@ -12,8 +12,8 @@ const Stack = createStackNavigator();
 
 const ExpenseStack = () => (
   <Stack.Navigator>
-    <Stack.Screen name='list' component={ExpensesPage}/>
-    <Stack.Screen name='add' component={EnterPage}/>
+    <Stack.Screen name='list' component={ExpensesPage} options={{headerShown: false}}/>
+    <Stack.Screen name='New Item' component={EnterPage}/>
   </Stack.Navigator>
 );
 

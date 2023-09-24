@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, Pressable } from 'react-native';
 import { styled } from 'nativewind';
-import Item from '../data/Model';
+import Item from '../data/Item';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
