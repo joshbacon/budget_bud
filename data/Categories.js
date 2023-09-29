@@ -1,5 +1,5 @@
 
-export const Categories = {
+export default Categories = {
     'Utilities': {
         icon: 'gear',
         subs: {
