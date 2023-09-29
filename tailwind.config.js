@@ -2,7 +2,11 @@
 module.exports = {
   content: ["./App.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    minWidth: {
+      'icon': '40px',
+    },
     colors: {
+      'grey': '#555',
       'scarlet-gum': {
         '50': '#f5edf7', 
         '100': '#ecdff0', 
@@ -14,7 +18,7 @@ module.exports = {
         '700': '#2c0e47', 
         '800': '#20093b', 
         '900': '#15052b', 
-        '950': '#0c021c'
+        '950': '#0c021c',
       },
       'fruit-salad': {
         '50': '#f1f8f2',

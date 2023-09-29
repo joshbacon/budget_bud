@@ -4,18 +4,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import HomePage from './pages/Home';
 import ExpensesPage from './pages/Expenses';
-import EnterPage from './pages/Enter';
 import BudgetPage from './pages/Budget';
 
 const Tab = createBottomTabNavigator ();
 const Stack = createStackNavigator();
-
-const ExpenseStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name='list' component={ExpensesPage} options={{headerShown: false}}/>
-    <Stack.Screen name='New Item' component={EnterPage}/>
-  </Stack.Navigator>
-);
 
 export default function App() {
   return (
@@ -49,7 +41,7 @@ export default function App() {
         />
         <Tab.Screen
           name='Expenses'
-          component={ExpenseStack}
+          component={ExpensesPage}
           options={{
             tabBarActiveTintColor: '#ecdff0',
             tabBarIcon: ({color, size}) => (

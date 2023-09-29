@@ -19,7 +19,7 @@ export default ExpenseItem = ({data}) => {
                     {data.name}
                 </StyledText>
                 <StyledView className='flex-row'>
-                    <StyledView className='z-20 rounded-xl p-3 bg-scarlet-gum-500'>
+                    <StyledView className='z-20 min-w-icon items-center rounded-xl p-3 bg-scarlet-gum-500'>
                         <Icon
                             name={data.category}
                             size={18}
@@ -28,7 +28,7 @@ export default ExpenseItem = ({data}) => {
                     </StyledView>
                     {
                         data.subCategory !== null ?
-                        <StyledView className='z-20 rounded-xl p-3 ml-1 bg-scarlet-gum-500'>
+                        <StyledView className='z-20 min-w-icon items-center rounded-xl p-3 ml-1 bg-scarlet-gum-500'>
                             <Icon
                                 name={data.subCategory}
                                 size={18}
@@ -40,10 +40,10 @@ export default ExpenseItem = ({data}) => {
             </StyledView>
 
             <StyledView className=''>
-                <StyledText className='text-lg text-center text-scarlet-gum-100'>
+                <StyledText className='text-lg text-right text-scarlet-gum-100'>
                     ${data.amount}
                 </StyledText>
-                <StyledText className='text-center text-scarlet-gum-100'>
+                <StyledText className='text-right text-scarlet-gum-100'>
                     {data.date}
                 </StyledText>
             </StyledView>

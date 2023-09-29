@@ -4,7 +4,6 @@ export default Categories = {
         icon: 'gear',
         subs: {
             'Power': 'bolt',
-            'Water': 'tint',
             'Oil': 'fire',
             'WiFi': 'wifi'
         }
