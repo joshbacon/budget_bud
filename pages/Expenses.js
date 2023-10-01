@@ -12,6 +12,10 @@ const StyledText = styled(Text);
 const StyledPressable = styled(Pressable);
 const StyledIcon = styled(Icon);
 
+// needs a refresh controller: https://reactnative.dev/docs/refreshcontrol
+// change that scroll view into a Flat list or whatever: https://reactnative.dev/docs/using-a-listview
+// -- figure out how to show a message while the async storage reads
+
 export default ExpensesPage = ({navigation}) => {
 
     const [showModal, setShowModal] = useState(false);

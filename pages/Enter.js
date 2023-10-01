@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { styled } from 'nativewind';
@@ -21,21 +21,40 @@ const inputStyle = {
 
 export default EnterPage = ({showing, setShowing}) => {
 
-    const [name, setName] = useState("");
-    const [amount, setAmount] = useState("");
+    const [name, setName] = useState('');
+    const [amount, setAmount] = useState('');
 
     const [date, setDate] = useState(new Date());
     const [open, setOpen] = useState(false);
-
-    const [priority, setPriority] = useState('');
-
+    
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
 
+    const [priority, setPriority] = useState('');
+
     function saveEntry() {
-        // check that everything has something entered
-        // format somehow (fill an Item object? then you could put the save function there)
-        // save to local storage
+        if (name !== '' && amount !== '' && priority !== '' && category !== '' &&
+            (Categories[category].subs.length > 0 ? subCategory !== '' : true)
+        ) {
+            const entry = new Item({
+                name: name,
+                amount: amount,
+                date: date,
+                category: category,
+                subCategory: subCategory,
+                priority: priority
+            });
+            entry.save();
+            setShowing(false);
+        } else {
+            let leftOver = 'Empty fields: \n';
+            if (name === '') leftOver += 'Name\n';
+            if (amount === '') leftOver += 'Amount\n';
+            if (category === '') leftOver += 'Category\n';
+            if (subCategory === '') leftOver += 'Sub-category\n';
+            if (priority === '') leftOver += 'Priority\n';
+            Alert.alert('Missing fields', leftOver);
+        }
     }
 
     return (
@@ -104,7 +123,7 @@ export default EnterPage = ({showing, setShowing}) => {
 
                     <StyledPressable className='flex-row my-5 justify-between items-center bg-scarlet-gum-600'>
                         <StyledText className='ml-5 text-lg text-scarlet-gum-200'>
-                            Sept 25, 2023
+                            {date.toString().split(' ')[1]} {date.toString().split(' ')[2]}, {date.toString().split(' ')[3]}
                         </StyledText>
                         <StyledView className='mr-1 p-3 rounded bg-scarlet-gum-700'>
                             <Icon

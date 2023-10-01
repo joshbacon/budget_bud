@@ -42,6 +42,11 @@ const data = {
 
 export default BudgetPage = () => {
 
+  // todo:
+  // - store budget amounts in async storage
+  // - store savings goals in async storage
+  // - read all the saved data in on (app?) open so there's no wait
+
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Utilities');
 

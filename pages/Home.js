@@ -108,7 +108,15 @@ const data = [
 
 export default HomePage = () => {
 
+  // ToDo:
+  // - load data in (show old data until it loads? figure something out)
+  // - feed in to pie and bezier charts
+  // - update bottom text (throw some color in based on if we're up or down from last period)
+  // - delete things after 6 months (2 quarters): need to show if up or down from last period and quarter is longest
+
   const [dateRange, setDateRange] = useState('week');
+  // store this with redux so the budget thing makes sense (just budget no savings)
+  // also use in expenses so it goes back the week/month/quarter and you're not scrolling forever
 
   return (
     <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
