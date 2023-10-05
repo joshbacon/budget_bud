@@ -4,7 +4,7 @@ import { Dimensions } from 'react-native';
 import { View, Text, Pressable } from 'react-native';
 import { styled } from 'nativewind';
 import { PieChart, StackedBarChart, ContributionGraph, LineChart } from 'react-native-chart-kit';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -115,8 +115,55 @@ export default HomePage = () => {
   // - delete things after 6 months (2 quarters): need to show if up or down from last period and quarter is longest
 
   const [dateRange, setDateRange] = useState('week');
+  
+  const [currentRange, setCurrentRange] = useState([]);
+  const [previousRange, setPreviousRange] = useState([]);
   // store this with redux so the budget thing makes sense (just budget no savings)
   // also use in expenses so it goes back the week/month/quarter and you're not scrolling forever
+
+
+  function updateDateRange(newRange) {
+    // this is UNTESTED, but it should filter the expense array to the given time range
+    // also grabs the previous one for that "______ than last period" thing
+    AsyncStorage.getItem('expenses').then(result => {
+      let expenseList = JSON.parse(result);
+      if (newRange === 'quarter') {
+        const today = new Date();
+        const quarter = (today.getMonth()-1)/3+1;
+        const start = new Date(today.getFullYear(), (quarter-1)*3+1, 1);
+        setCurrentRange(expenseList.filter(item => {
+          return JSON.parse(item).date > start.toDateString();
+        }));
+        const prevQuarter = (today.getMonth()-4)/3+1;
+        const prevStart = new Date(today.getFullYear(), (prevQuarter-1)*3+1, 1);
+        setPreviousRange(expenseList.filter(item => {
+          return JSON.parse(item).date < start && JSON.parse(item).date >= prevStart;
+        }));
+      } else if (newRange === 'month') {
+        const today = new Date();
+        const first = new Date(today.getFullYear(), today.getMonth(), 1);
+        setCurrentRange(expenseList.filter(item => {
+          return JSON.parse(item).date >= first.toDateString();
+        }));
+        const prevFirst = new Date(today.getFullYear(), today.getMonth()-1, 1);
+        setPreviousRange(expenseList.filter(item => {
+          return JSON.parse(item).date < first.toDateString() && JSON.parse(item).date >= prevFirst;
+        }));
+      } else { // newRange === 'week'
+        const sunday = new Date();
+        sunday.setDate(sunday.getDate() - sunday.getDay());
+        setCurrentRange(expenseList.filter(item => {
+          return JSON.parse(item).date >= sunday.toDateString();
+        }));
+        const prevSunday = new Date();
+        prevSunday.setDate(sunday.getDate() - 7);
+        setPreviousRange(expenseList.filter(item => {
+          return JSON.parse(item).date < sunday.toDateString() && JSON.parse(item).date >= prevSunday;
+        }));
+      }
+      setDateRange(newRange);
+    });
+  }
 
   return (
     <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
@@ -125,7 +172,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='quarter'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            setDateRange('quarter');
+            updateDateRange('quarter');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>
@@ -135,7 +182,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='month'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            setDateRange('month');
+            updateDateRange('month');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>
@@ -145,7 +192,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='week'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            setDateRange('week');
+            updateDateRange('week');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>
