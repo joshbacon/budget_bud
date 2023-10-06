@@ -126,40 +126,42 @@ export default HomePage = () => {
     // this is UNTESTED, but it should filter the expense array to the given time range
     // also grabs the previous one for that "______ than last period" thing
     AsyncStorage.getItem('expenses').then(result => {
-      let expenseList = JSON.parse(result);
-      if (newRange === 'quarter') {
-        const today = new Date();
-        const quarter = (today.getMonth()-1)/3+1;
-        const start = new Date(today.getFullYear(), (quarter-1)*3+1, 1);
-        setCurrentRange(expenseList.filter(item => {
-          return JSON.parse(item).date > start.toDateString();
-        }));
-        const prevQuarter = (today.getMonth()-4)/3+1;
-        const prevStart = new Date(today.getFullYear(), (prevQuarter-1)*3+1, 1);
-        setPreviousRange(expenseList.filter(item => {
-          return JSON.parse(item).date < start && JSON.parse(item).date >= prevStart;
-        }));
-      } else if (newRange === 'month') {
-        const today = new Date();
-        const first = new Date(today.getFullYear(), today.getMonth(), 1);
-        setCurrentRange(expenseList.filter(item => {
-          return JSON.parse(item).date >= first.toDateString();
-        }));
-        const prevFirst = new Date(today.getFullYear(), today.getMonth()-1, 1);
-        setPreviousRange(expenseList.filter(item => {
-          return JSON.parse(item).date < first.toDateString() && JSON.parse(item).date >= prevFirst;
-        }));
-      } else { // newRange === 'week'
-        const sunday = new Date();
-        sunday.setDate(sunday.getDate() - sunday.getDay());
-        setCurrentRange(expenseList.filter(item => {
-          return JSON.parse(item).date >= sunday.toDateString();
-        }));
-        const prevSunday = new Date();
-        prevSunday.setDate(sunday.getDate() - 7);
-        setPreviousRange(expenseList.filter(item => {
-          return JSON.parse(item).date < sunday.toDateString() && JSON.parse(item).date >= prevSunday;
-        }));
+      if (result !== null) {
+        let expenseList = JSON.parse(result);
+        if (newRange === 'quarter') {
+          const today = new Date();
+          const quarter = (today.getMonth()-1)/3+1;
+          const start = new Date(today.getFullYear(), (quarter-1)*3+1, 1);
+          setCurrentRange(expenseList.filter(item => {
+            return JSON.parse(item).date > start.toDateString();
+          }));
+          const prevQuarter = (today.getMonth()-4)/3+1;
+          const prevStart = new Date(today.getFullYear(), (prevQuarter-1)*3+1, 1);
+          setPreviousRange(expenseList.filter(item => {
+            return JSON.parse(item).date < start && JSON.parse(item).date >= prevStart;
+          }));
+        } else if (newRange === 'month') {
+          const today = new Date();
+          const first = new Date(today.getFullYear(), today.getMonth(), 1);
+          setCurrentRange(expenseList.filter(item => {
+            return JSON.parse(item).date >= first.toDateString();
+          }));
+          const prevFirst = new Date(today.getFullYear(), today.getMonth()-1, 1);
+          setPreviousRange(expenseList.filter(item => {
+            return JSON.parse(item).date < first.toDateString() && JSON.parse(item).date >= prevFirst;
+          }));
+        } else { // newRange === 'week'
+          const sunday = new Date();
+          sunday.setDate(sunday.getDate() - sunday.getDay());
+          setCurrentRange(expenseList.filter(item => {
+            return JSON.parse(item).date >= sunday.toDateString();
+          }));
+          const prevSunday = new Date();
+          prevSunday.setDate(sunday.getDate() - 7);
+          setPreviousRange(expenseList.filter(item => {
+            return JSON.parse(item).date < sunday.toDateString() && JSON.parse(item).date >= prevSunday;
+          }));
+        }
       }
       setDateRange(newRange);
     });

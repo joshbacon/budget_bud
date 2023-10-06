@@ -1,13 +1,11 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator  } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from "@react-navigation/stack";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import HomePage from './pages/Home';
 import ExpensesPage from './pages/Expenses';
 import BudgetPage from './pages/Budget';
 
-const Tab = createBottomTabNavigator ();
-const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
