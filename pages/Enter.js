@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { styled } from 'nativewind';
 import Item from '../data/Item';
 import Categories from '../data/Categories';
+import { useSelector, useDispatch } from 'react-redux';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -32,9 +33,12 @@ export default EnterPage = ({showing, setShowing}) => {
 
     const [priority, setPriority] = useState('');
 
+    const currExpenses = useSelector(state => state.expenses.currExpenses);
+    const dispatch = useDispatch();
+
     function saveEntry() {
         if (name !== '' && amount !== '' && priority !== '' && category !== '' &&
-            (Categories[category].subs.length > 0 ? subCategory !== '' : true)
+            (Object.entries(Categories[category].subs).length > 0 ? subCategory !== '' : true)
         ) {
             const entry = new Item({
                 name: name,
@@ -45,6 +49,16 @@ export default EnterPage = ({showing, setShowing}) => {
                 priority: priority
             });
             entry.save();
+            dispatch({
+                type: 'SET_CURR_EXPENSES',
+                payload: [...currExpenses, entry.data()]
+            });
+            setName('');
+            setAmount('');
+            setDate(new Date());
+            setCategory('');
+            setSubCategory('');
+            setPriority('');
             setShowing(false);
         } else {
             let leftOver = 'Empty fields: \n';
@@ -66,7 +80,7 @@ export default EnterPage = ({showing, setShowing}) => {
             }}
             style={{width: '100%'}}
         >
-            <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
+            <StyledView className='flex-1 h-full flex-col justify-start items-center bg-scarlet-gum-500'>
 
                 <StyledView className='flex-row w-full justify-start items-center'>
                     <StyledPressable
