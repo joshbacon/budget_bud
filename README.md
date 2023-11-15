@@ -1,7 +1,7 @@
 
 <div align="center">
   <a href="https://github.com/joshbacon/codegambit">
-    <img src="assets/logo.png" alt="Logo" width="150" height="150">
+    <img src="assets/icon.png" alt="Icon" width="150" height="150">
   </a>
 </div>
     

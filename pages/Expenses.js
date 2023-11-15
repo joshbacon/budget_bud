@@ -5,6 +5,7 @@ import { styled } from 'nativewind';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ExpenseItem from '../components/ExpenseItem';
 import { item1, item2, item3 } from '../data/tempdata';
+import { useSelector } from 'react-redux';
 import EnterPage from './Enter';
 
 const StyledView = styled(View);
@@ -19,6 +20,8 @@ const StyledIcon = styled(Icon);
 export default ExpensesPage = ({navigation}) => {
 
     const [showModal, setShowModal] = useState(false);
+
+    const currExpenses = useSelector(state => state.expenses.currExpenses);
 
     return (
         <StyledView className='flex-1 justify-start align-middle bg-scarlet-gum-500'>
@@ -46,9 +49,9 @@ export default ExpensesPage = ({navigation}) => {
 
             <SafeAreaView>
                 <ScrollView>
-                    <ExpenseItem data={item1} />
-                    <ExpenseItem data={item2} />
-                    <ExpenseItem data={item3} />
+                    {currExpenses.map(item => {
+                        return <ExpenseItem key={`${item.name}-${item.date}`} data={item}/>
+                    })}
                 </ScrollView>
             </SafeAreaView>
 
