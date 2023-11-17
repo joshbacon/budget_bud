@@ -58,6 +58,7 @@ export default BudgetPage = () => {
   /* Budget Data related functions */
 
   function changeBudgetAmount(subCat, amount) {
+    if (amount === '') amount = null;
     let tempData = {...budgetData};
     if (subCat !== null) {
       tempData[selectedCategory][subCat] = amount;
@@ -106,11 +107,10 @@ export default BudgetPage = () => {
 
   useEffect(() => {
     // Reformat data for the savings progress chart
-    setProgressData(
-      savingsData
-        .filter(s => s.amount !== null && s.goal !== null )
-        .map(s => s.amount / s.goal)
-    );
+    let tempData = savingsData
+      .filter(s => s.amount !== null && s.goal !== null )
+      .map(s => s.amount / s.goal)
+    if (tempData.length !== 0 ) setProgressData(tempData);
   }, [savingsData]);
 
   useEffect(() => {

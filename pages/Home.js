@@ -29,9 +29,6 @@ const chartConfig = {
 
 export default HomePage = () => {
 
-  //UTDS
-  // - everything should be done except the date picker
-
   const dateRange = useSelector(state => state.expenses.dateRange);
   const currExpenses = useSelector(state => state.expenses.currExpenses);
   const prevExpenses = useSelector(state => state.expenses.prevExpenses);
@@ -118,17 +115,23 @@ export default HomePage = () => {
   }
 
   async function cleanData() {
-    AsyncStorage.clear();
-
-    // definietely need to test this (need the date picker so we can backdate entries)
     AsyncStorage.getItem('expenses').then(result => {
       if (result !== null) {
         let expenseList = JSON.parse(result);
-        const limitDate = new Date();
-        limitDate.setDate(limitDate.getMonth() - 6);
+
+        const today = new Date();
+        
+        let currQuarter = Math.floor(today.getMonth() /3);
+        
+        let startOfLastQuarter = new Date(today.getFullYear(), currQuarter * 3, 1); 
+        startOfLastQuarter.setMonth(startOfLastQuarter.getMonth() -3)
+        startOfLastQuarter.setHours(0,0,0,0);
+
         expenseList.filter(item => {
-          return JSON.parse(item).date.getMonth() > limitDate.getMonth();
-        })
+          return new Date(item.date) >= startOfLastQuarter;
+        });
+
+        AsyncStorage.setItem('expenses', JSON.stringify(expenseList));
       }
     });
   }
@@ -373,8 +376,7 @@ export default HomePage = () => {
   }, [currExpenses, prevExpenses]);
 
   useEffect(() => {
-    updateDateRange(dateRange);
-    // cleanData();
+    cleanData().then(updateDateRange(dateRange));
   }, []);
 
   return (

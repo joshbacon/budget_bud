@@ -57,7 +57,6 @@ export default EnterPage = ({showing, setShowing}) => {
             // Reset inputs
             setName('');
             setAmount('');
-            setDate(new Date());
             setCategory('');
             setSubCategory('');
             setPriority('');
