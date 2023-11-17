@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Dimensions } from 'react-native';
-import { View, Text, TextInput, Pressable, Modal, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, SafeAreaView, ScrollView } from 'react-native';
 import { styled } from 'nativewind';
 import { ProgressChart } from 'react-native-chart-kit';
 import BudgetItem from '../components/BudgetItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Categories from '../data/Categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { dummyBudgetData, dummySavingsData } from '../data/DummyData';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledPressable = styled(Pressable);
 
 const winWidth = Dimensions.get('window').width;
-const winHeight = Dimensions.get('window').height;
 
 const inputStyle = {
   fontSize: 20,
@@ -37,64 +38,22 @@ const chartConfig = {
     useShadowColorFromDataset: false // optional
 };
 
-const data = {
-  // labels: ["Jamaica", "YQM Ticket", "Car", 'Noah Kahan'],
-  data: [0.5, 0.23, 0.82, 0.32]
-};
-
 export default BudgetPage = () => {
 
-  // Load data: have the use effect but it gave a error so it's commented
-  // Budget data: should be done, but it's untested (text inputs change state, OK button saves to async storage)
-  // Savings data: should be done, but it's untested (text inputs change state, back button saves to async storage)
+  const currExpenses = useSelector(state => state.expenses.currExpenses);
 
-  const [budgetData, setBudgetData] = useState({
-    'Utilities': {
-        'Power': null,
-        'Oil': null,
-        'WiFi': null
-    },
-    'Car': {
-        'Payment': null,
-        'Insurance': null,
-        'Gas': null,
-        'Maintenance': null
-      },
-    'Recurring': null,
-    'Groceries': null,
-    'Rent': null,
-    'Other': {
-      'Clothes': null,
-      'Tech': null,
-      'FastFood': null,
-      'Travel': null,
-      'Gifts': null,
-      'Misc': null
-    }
-  });
+  const [budgetData, setBudgetData] = useState(dummyBudgetData);
   
-  const [savingsData, setSavingsData] = useState([
-    {name: '', amount: null, goal: null},
-    {name: '', amount: null, goal: null},
-    {name: '', amount: null, goal: null},
-    {name: '', amount: null, goal: null}
-  ]);
+  const [savingsData, setSavingsData] = useState(dummySavingsData);
 
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Utilities');
 
   const [savingsModalOpen, setSavingsModalOpen] = useState(false);
 
-  // useEffect(() => {
-  //   // get budget data
-  //   AsyncStorage.getItem('budget').then(result => {
-  //     if (result !== null) setBudgetData(JSON.parse(result));
-  //   });
-  //   // get savings data
-  //   AsyncStorage.getItem('savings').then(result => {
-  //     if (result !== null) setSavingsData(JSON.parse(result));
-  //   });
-  // }, []);
+  const [progressData, setProgressData] = useState({
+    data: [0]
+  });
 
   /* Budget Data related functions */
 
@@ -143,12 +102,32 @@ export default BudgetPage = () => {
     saveSavingsData();
   }
 
+  /* Hooks */
 
-  // also make a modals folder and move them all into there
+  useEffect(() => {
+    // Reformat data for the savings progress chart
+    setProgressData(
+      savingsData
+        .filter(s => s.amount !== null && s.goal !== null )
+        .map(s => s.amount / s.goal)
+    );
+  }, [savingsData]);
 
-  // probably need a state string for each category/sub-category in order to display and update properly on set amount modal
+  useEffect(() => {
+    // Load budget data
+    AsyncStorage.getItem('budget').then(result => {
+      if (result !== null) {
+        setBudgetData(JSON.parse(result))
+      };
+    });
+    // Load savings data
+    AsyncStorage.getItem('savings').then(result => {
+      if (result !== null) {
+        setSavingsData(JSON.parse(result));
+      }
+    });
+  }, []);
 
-  // also probably some state variables for setting savings goals + amounts saved
 
   return (
     <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
@@ -163,7 +142,7 @@ export default BudgetPage = () => {
           <ScrollView style={{flex: 1}}>
             <StyledView className='p-8 rounded-xl bg-scarlet-gum-500'>
               <StyledText className='mb-5 text-lg font-semibold text-scarlet-gum-200 text-center'>
-                Set Budget Amount
+                Set Monthly Budget Amount
               </StyledText>
               {
                 Object.keys(Categories[selectedCategory].subs).length === 0 ?
@@ -176,6 +155,7 @@ export default BudgetPage = () => {
                   <TextInput
                     style={inputStyle}
                     keyboardType='numeric'
+                    value={budgetData[selectedCategory]}
                     onChangeText={newAmount => {
                       changeBudgetAmount(null, newAmount);
                     }}
@@ -191,7 +171,20 @@ export default BudgetPage = () => {
                           color={'#ecdff0'}
                         />
                         <TextInput
-                          style={inputStyle}
+                          style={{
+                            ...inputStyle,
+                            borderColor: `${
+                              currExpenses
+                              .reduce((total, expense) => {
+                                if (expense.category === selectedCategory && expense.subCategory === key)
+                                  return total += expense.amount;
+                                else return total;
+                              }, 0) > budgetData[selectedCategory][key] ?
+                              '#bf747a' :
+                              '#479159'
+                            }`
+                          }}
+                          value={budgetData[selectedCategory][key]}
                           keyboardType='numeric'
                           onChangeText={newAmount => {
                             changeBudgetAmount(key, newAmount);
@@ -203,16 +196,6 @@ export default BudgetPage = () => {
                 </StyledView>
               }
               <StyledView className='flex-row w-fill justify-evenly'>
-                {/* <StyledPressable
-                  className='mt-5 p-2 w-24 items-center bg-scarlet-gum-700 rounded'
-                  onPress={() => {
-                    setBudgetModalOpen(false);
-                  }}
-                >
-                  <StyledText className='text-lg text-scarlet-gum-200'>
-                    Cancel
-                  </StyledText>
-                </StyledPressable> */}
                 <StyledPressable
                   className='mt-5 p-2 w-24 items-center bg-scarlet-gum-700 rounded'
                   onPress={() => {
@@ -226,6 +209,13 @@ export default BudgetPage = () => {
                 </StyledPressable>
               </StyledView>
             </StyledView>
+            { currExpenses
+              .reverse()
+              .filter(e => e.category === selectedCategory)
+              .map(item => {
+                return <ExpenseItem key={item.date} data={item}/>
+              })
+            }
           </ScrollView>
         </StyledView>
       </Modal>
@@ -237,7 +227,15 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Utilities'} amount={100} limit={100} />
+          <BudgetItem
+            category={'Utilities'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Utilities' ? expense.amount : 0;
+            }, 0)}
+            limit={Object.entries(budgetData.Utilities).reduce((total, limit) => {
+              return total += limit[1];
+            }, 0)}
+          />
         </StyledPressable>
         <StyledPressable
           className='w-full items-center'
@@ -246,7 +244,15 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Car'} amount={109} limit={100} />
+          <BudgetItem
+            category={'Car'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Car' ? expense.amount : 0;
+            }, 0)}
+            limit={Object.entries(budgetData.Car).reduce((total, limit) => {
+              return total += limit[1];
+            }, 0)}
+          />
         </StyledPressable>
         <StyledPressable
           className='w-full items-center'
@@ -255,7 +261,13 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Recurring'} amount={25} limit={100} />
+          <BudgetItem
+            category={'Recurring'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Recurring' ? expense.amount : 0;
+            }, 0)}
+            limit={budgetData.Recurring}
+          />
         </StyledPressable>
         <StyledPressable
           className='w-full items-center'
@@ -264,7 +276,12 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Groceries'} amount={25} limit={100} />
+          <BudgetItem category={'Groceries'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Groceries' ? expense.amount : 0;
+            }, 0)}
+            limit={budgetData.Groceries}
+          />
         </StyledPressable>
         <StyledPressable
           className='w-full items-center'
@@ -273,7 +290,13 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Rent'} amount={25} limit={100} />
+          <BudgetItem
+            category={'Rent'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Rent' ? expense.amount : 0;
+            }, 0)}
+            limit={budgetData.Rent}
+          />
         </StyledPressable>
         <StyledPressable
           className='w-full items-center'
@@ -282,7 +305,15 @@ export default BudgetPage = () => {
             setBudgetModalOpen(true);
           }}
         >
-          <BudgetItem category={'Other'} amount={99} limit={100} />
+          <BudgetItem
+            category={'Other'}
+            amount={currExpenses.reduce((total, expense) => {
+              return total += expense.category === 'Other' ? expense.amount : 0;
+            }, 0)}
+            limit={Object.entries(budgetData.Other).reduce((total, limit) => {
+              return total += limit[1];
+            }, 0)}
+          />
         </StyledPressable>
       </StyledView>
 
@@ -311,7 +342,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'name'}
+                        placeholder='name'
+                        value={savingsData[0].name}
                         onChangeText={newName => {
                           setSavingsName(0, newName);
                         }}
@@ -320,7 +352,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'goal'}
+                        placeholder='goal'
+                        value={savingsData[0].goal}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsGoal(0, newAmount);
@@ -332,22 +365,14 @@ export default BudgetPage = () => {
                     <StyledView className='w-9/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'amount saved'}
+                        placeholder='amount saved'
+                        value={savingsData[0].amount}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsAmount(0, newAmount);
                         }}
                       />
                     </StyledView>
-                    {/* <StyledPressable
-                      onPress={saveSavingsData}
-                    >
-                      <Icon
-                        name='save'
-                        size={24}
-                        color={'#ecdff0'}
-                      />
-                    </StyledPressable> */}
                     <StyledPressable
                       onPress={() => emptySavingsIndex(0)}
                     >
@@ -367,7 +392,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'name'}
+                        placeholder='name'
+                        value={savingsData[1].name}
                         onChangeText={newName => {
                           setSavingsName(1, newName);
                         }}
@@ -376,7 +402,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'goal'}
+                        placeholder='goal'
+                        value={savingsData[1].goal}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsGoal(1, newAmount);
@@ -388,22 +415,14 @@ export default BudgetPage = () => {
                     <StyledView className='w-9/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'amount saved'}
+                        placeholder='amount saved'
+                        value={savingsData[1].amount}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsAmount(1, newAmount);
                         }}
                       />
                     </StyledView>
-                    {/* <StyledPressable
-                      onPress={saveSavingsData}
-                    >
-                      <Icon
-                        name='save'
-                        size={24}
-                        color={'#ecdff0'}
-                      />
-                    </StyledPressable> */}
                     <StyledPressable
                       onPress={() => emptySavingsIndex(1)}
                     >
@@ -423,7 +442,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'name'}
+                        placeholder='name'
+                        value={savingsData[2].name}
                         onChangeText={newName => {
                           setSavingsName(2, newName);
                         }}
@@ -432,7 +452,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'goal'}
+                        placeholder='goal'
+                        value={savingsData[2].goal}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsGoal(2, newAmount);
@@ -444,22 +465,14 @@ export default BudgetPage = () => {
                     <StyledView className='w-9/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'amount saved'}
+                        placeholder='amount saved'
+                        value={savingsData[2].amount}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsAmount(2, newAmount);
                         }}
                       />
                     </StyledView>
-                    {/* <StyledPressable
-                      onPress={saveSavingsData}
-                    >
-                      <Icon
-                        name='save'
-                        size={24}
-                        color={'#ecdff0'}
-                      />
-                    </StyledPressable> */}
                     <StyledPressable
                       onPress={() => emptySavingsIndex(2)}
                     >
@@ -479,7 +492,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'name'}
+                        placeholder='name'
+                        value={savingsData[3].name}
                         onChangeText={newName => {
                           setSavingsName(3, newName);
                         }}
@@ -488,7 +502,8 @@ export default BudgetPage = () => {
                     <StyledView className='w-6/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'goal'}
+                        placeholder='goal'
+                        value={savingsData[3].goal}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
                           setSavingsGoal(3, newAmount);
@@ -500,7 +515,7 @@ export default BudgetPage = () => {
                     <StyledView className='w-9/12 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
-                        placeholder={'amount saved'}
+                        placeholder='amount saved'
                         value={savingsData[3].amount}
                         keyboardType='numeric'
                         onChangeText={newAmount => {
@@ -508,15 +523,6 @@ export default BudgetPage = () => {
                         }}
                       />
                     </StyledView>
-                    {/* <StyledPressable
-                      onPress={saveSavingsData}
-                    >
-                      <Icon
-                        name='save'
-                        size={24}
-                        color={'#ecdff0'}
-                      />
-                    </StyledPressable> */}
                     <StyledPressable
                       onPress={() => emptySavingsIndex(3)}
                     >
@@ -547,7 +553,7 @@ export default BudgetPage = () => {
         </Modal>
 
         <ProgressChart
-          data={data}
+          data={progressData}
           width={winWidth}
           height={120}
           strokeWidth={5}

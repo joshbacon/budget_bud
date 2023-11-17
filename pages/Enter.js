@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, Modal, Alert } from 'react-native';
-import DatePicker from 'react-native-date-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { styled } from 'nativewind';
 import Item from '../data/Item';
@@ -17,6 +16,7 @@ const inputStyle = {
     height: 50,
     width: '82.5%',
     borderWidth: 2,
+    borderColor: '#fff',
     padding: 10
 };
 
@@ -24,9 +24,6 @@ export default EnterPage = ({showing, setShowing}) => {
 
     const [name, setName] = useState('');
     const [amount, setAmount] = useState('');
-
-    const [date, setDate] = useState(new Date());
-    const [open, setOpen] = useState(false);
     
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
@@ -43,16 +40,21 @@ export default EnterPage = ({showing, setShowing}) => {
             const entry = new Item({
                 name: name,
                 amount: amount,
-                date: date,
+                date: new Date(),
                 category: category,
                 subCategory: subCategory,
                 priority: priority
             });
+
+            // save new entry to local memory for later
             entry.save();
+            // and to redux to feed visuals (if added to today will always be in range)
             dispatch({
                 type: 'SET_CURR_EXPENSES',
-                payload: [...currExpenses, entry.data()]
+                payload: [...currExpenses, {...entry.data(), date: new Date().toString()}]
             });
+
+            // Reset inputs
             setName('');
             setAmount('');
             setDate(new Date());
@@ -137,7 +139,7 @@ export default EnterPage = ({showing, setShowing}) => {
 
                     <StyledPressable className='flex-row my-5 justify-between items-center bg-scarlet-gum-600'>
                         <StyledText className='ml-5 text-lg text-scarlet-gum-200'>
-                            {date.toString().split(' ')[1]} {date.toString().split(' ')[2]}, {date.toString().split(' ')[3]}
+                            {new Date().toDateString()}
                         </StyledText>
                         <StyledView className='mr-1 p-3 rounded bg-scarlet-gum-700'>
                             <Icon
@@ -146,22 +148,6 @@ export default EnterPage = ({showing, setShowing}) => {
                                 color='#ecdff0'
                             />
                         </StyledView>
-                        {/* this will work in the build but not in expo go app (could try with a usb also maybe?)
-                        <DatePicker
-                            modal
-                            date={date}
-                            mode='date'
-                            textColor='#CEB2D9'
-                            theme='dark'
-                            androidVariant='nativeAndroid'
-                            onConfirm={(date) => {
-                                setOpen(false);
-                                setDate(date);
-                            }}
-                            onCancel={() => {
-                                setOpen(false);
-                            }}
-                        /> */}
                     </StyledPressable>
 
                     <StyledView className='flex-row w-full justify-evenly'>

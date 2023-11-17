@@ -4,7 +4,6 @@ import { View, Text, Pressable, SafeAreaView, ScrollView } from 'react-native';
 import { styled } from 'nativewind';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ExpenseItem from '../components/ExpenseItem';
-import { item1, item2, item3 } from '../data/tempdata';
 import { useSelector } from 'react-redux';
 import EnterPage from './Enter';
 
@@ -13,11 +12,7 @@ const StyledText = styled(Text);
 const StyledPressable = styled(Pressable);
 const StyledIcon = styled(Icon);
 
-// needs a refresh controller: https://reactnative.dev/docs/refreshcontrol
-// change that scroll view into a Flat list or whatever: https://reactnative.dev/docs/using-a-listview
-// -- figure out how to show a message while the async storage reads
-
-export default ExpensesPage = ({navigation}) => {
+export default ExpensesPage = () => {
 
     const [showModal, setShowModal] = useState(false);
 
@@ -30,7 +25,7 @@ export default ExpensesPage = ({navigation}) => {
             <EnterPage showing={showModal} setShowing={setShowModal}/>
             
             <StyledPressable
-                className='w-fill mx-2 my-2 p-2 flex-row justify-start items-center rounded-xl bg-scarlet-gum-700'
+                className='mx-2 my-2 p-2 flex-row justify-start items-center rounded-xl bg-scarlet-gum-700'
                 onPress={() => {
                     setShowModal(true);
                 }}
@@ -49,9 +44,12 @@ export default ExpensesPage = ({navigation}) => {
 
             <SafeAreaView>
                 <ScrollView>
-                    {currExpenses.map(item => {
-                        return <ExpenseItem key={`${item.name}-${item.date}`} data={item}/>
-                    })}
+                    { currExpenses
+                        .reverse()
+                        .map(item => {
+                            return <ExpenseItem key={item.date} data={item}/>
+                        })
+                    }
                 </ScrollView>
             </SafeAreaView>
 

@@ -6,7 +6,7 @@ const StyledView = styled(View);
 export default Loader = () => {
 
     return (
-        <StyledView className='flex-1 flex-col justify-start items-center bg-scarlet-gum-500'>
+        <StyledView className='flex-1 flex-col h-full justify-start items-center bg-scarlet-gum-500'>
             <ActivityIndicator
                 size={'large'}
                 color={'#479159'}

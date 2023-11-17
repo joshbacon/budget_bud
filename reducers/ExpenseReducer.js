@@ -33,15 +33,3 @@ export default function expenses(state = initState, action) {
             return state;
     }
 }
-
-
-// what data do we need??
-
-/*
-
-dateRange
-
-expenses
-
-
-*/

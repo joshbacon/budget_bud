@@ -8,6 +8,7 @@ import { barColors, Q1Labels, Q2Labels, Q3Labels, Q4Labels, monthLabels, barLabe
 import Loader from '../components/Loader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { dummyBarData, dummyDifference, dummyLineData, dummyPieData, dummyTotal } from '../data/DummyData';
+import Item from '../data/Item';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -29,13 +30,7 @@ const chartConfig = {
 export default HomePage = () => {
 
   //UTDS
-  // - home and expenses page are now dynamic and change with the selected period
-  // -- both need more testing once date picker is working (doesn't work over expo)
-  //    to make sure they are getting the right ranges and updating properly
-  // - the home page is one behind, so if it's on week and you switch to month it
-  //   will update to the week data (thus shows nothing on load even though theres dummy data...)
-  // - need to make budget page dynamic
-  // -- probably need some new redux stuff but it looks like async storage is done (most likely untested)
+  // - everything should be done except the date picker
 
   const dateRange = useSelector(state => state.expenses.dateRange);
   const currExpenses = useSelector(state => state.expenses.currExpenses);
@@ -53,6 +48,10 @@ export default HomePage = () => {
   async function updateDateRange(newRange) {
     AsyncStorage.getItem('expenses').then(result => {
       if (result !== null) {
+        dispatch({
+          type: 'SET_RANGE',
+          payload: newRange
+        });
         let expenseList = JSON.parse(result);
         if (newRange === 'quarter') {
           const today = new Date();
@@ -62,7 +61,7 @@ export default HomePage = () => {
           dispatch({
             type: 'SET_CURR_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date > start.toDateString();
+              return new Date(item.date) > start;
             })
           });
           const prevQuarter = (today.getMonth()-4)/3+1;
@@ -71,7 +70,8 @@ export default HomePage = () => {
           dispatch({
             type: 'SET_PREV_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date < start && item.date >= prevStart;
+              const tempDate = new Date(item.date);
+              return tempDate < start && tempDate >= prevStart;
             })
           });
         } else if (newRange === 'month') {
@@ -81,7 +81,7 @@ export default HomePage = () => {
           dispatch({
             type: 'SET_CURR_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date >= first.toDateString();
+              return new Date(item.date) >= first;
             })
           });
           const prevFirst = new Date(today.getFullYear(), today.getMonth()-1, 1);
@@ -89,17 +89,17 @@ export default HomePage = () => {
           dispatch({
             type: 'SET_PREV_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date < first.toDateString() && item.date >= prevFirst;
+              const tempDate = new Date(item.date);
+              return tempDate < first && tempDate >= prevFirst;
             })
           });
         } else { // newRange === 'week'
           const sunday = new Date();
           sunday.setDate(sunday.getDate() - sunday.getDay());
-          sunday.setHours(0, 0, 0, 0);
           dispatch({
             type: 'SET_CURR_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date >= sunday.toDateString();
+              return new Date(item.date) >= sunday;
             })
           });
           const prevSunday = new Date();
@@ -108,15 +108,12 @@ export default HomePage = () => {
           dispatch({
             type: 'SET_PREV_EXPENSES',
             payload: expenseList.filter(item => {
-              return item.date < sunday.toDateString() && item.date >= prevSunday.toDateString();
+              const tempDate = new Date(item.date);
+              return tempDate < sunday && tempDate >= prevSunday;
             })
           });
         }
       }
-      dispatch({
-        type: 'SET_RANGE',
-        payload: newRange
-      });
     });
   }
 
@@ -137,12 +134,15 @@ export default HomePage = () => {
   }
 
   function formatData() {
+    setLoading(true);
+
+    let itemList = [...currExpenses].map(item => new Item(item));
 
     if (dateRange === 'week') {
       // format bezier
       let linePoints = [0, 0, 0, 0, 0, 0, 0];
-      for (let i = 0; i < currExpenses.length; i++) {
-        linePoints[new Date(currExpenses[i].date).getDay()-1] += currExpenses[i].amount
+      for (let i = 0; i < itemList.length; i++) {
+        linePoints[itemList[i].getDate().getDay()] += itemList[i].getAmount()
       }
       setLineData({
         labels: lineLabelsWeek,
@@ -153,11 +153,11 @@ export default HomePage = () => {
 
       // format bar
       let barPoints = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
-      for (let i = 0; i < currExpenses.length; i++) {
-        if (currExpenses[i].priority === 'need') {
-          barPoints[new Date(currExpenses[i].date).getDay()][0] += currExpenses[i].amount
+      for (let i = 0; i < itemList.length; i++) {
+        if (itemList[i].getPriority() === 'need') {
+          barPoints[itemList[i].getDate().getDay()][0] += itemList[i].getAmount()
         } else {
-          barPoints[new Date(currExpenses[i].date).getDay()][1] += currExpenses[i].amount
+          barPoints[itemList[i].getDate().getDay()][1] += itemList[i].getAmount()
         }
       }
       setBarData({
@@ -170,16 +170,16 @@ export default HomePage = () => {
     } else if (dateRange === 'month') {
       // format bezier
       let linePoints = [0, 0, 0, 0];
-      for (let i = 0; i < currExpenses.length; i++) {
-        let itemDay = new Date(currExpenses[i].date).getDate();
+      for (let i = 0; i < itemList.length; i++) {
+        let itemDay = itemList[i].getDate().getDate();
         if (itemDay <= 7) {
-          linePoints[0] += currExpenses[i].amount;
+          linePoints[0] += itemList[i].getAmount();
         } else if (itemDay <= 14) {
-          linePoints[1] += currExpenses[i].amount;
+          linePoints[1] += itemList[i].getAmount();
         } else if (itemDay <= 21) {
-          linePoints[2] += currExpenses[i].amount;
+          linePoints[2] += itemList[i].getAmount();
         } else {
-          linePoints[3] += currExpenses[i].amount;
+          linePoints[3] += itemList[i].getAmount();
         }
       }
 
@@ -192,28 +192,28 @@ export default HomePage = () => {
 
       // format bar data
       let barPoints = [[0, 0], [0, 0], [0, 0], [0, 0]];
-      for (let i = 0; i < currExpenses.length; i++) {
-        if (currExpenses[i].priority === 'need') {
-          let itemDay = new Date(currExpenses[i].date).getDate();
+      for (let i = 0; i < itemList.length; i++) {
+        if (itemList[i].getPriority() === 'need') {
+          let itemDay = itemList[i].getDate().getDate();
           if (itemDay <= 7) {
-            barPoints[0][0] += currExpenses[i].amount;
+            barPoints[0][0] += itemList[i].getAmount();
           } else if (itemDay <= 14) {
-            barPoints[1][0] += currExpenses[i].amount;
+            barPoints[1][0] += itemList[i].getAmount();
           } else if (itemDay <= 21) {
-            barPoints[2][0] += currExpenses[i].amount;
+            barPoints[2][0] += itemList[i].getAmount();
           } else {
-            barPoints[3][0] += currExpenses[i].amount;
+            barPoints[3][0] += itemList[i].getAmount();
           }
         } else {
-          let itemDay = new Date(currExpenses[i].date).getDate();
+          let itemDay = itemList[i].getDate().getDate();
           if (itemDay <= 7) {
-            barPoints[0][1] += currExpenses[i].amount;
+            barPoints[0][1] += itemList[i].getAmount();
           } else if (itemDay <= 14) {
-            barPoints[1][1] += currExpenses[i].amount;
+            barPoints[1][1] += itemList[i].getAmount();
           } else if (itemDay <= 21) {
-            barPoints[2][1] += currExpenses[i].amount;
+            barPoints[2][1] += itemList[i].getAmount();
           } else {
-            barPoints[3][1] += currExpenses[i].amount;
+            barPoints[3][1] += itemList[i].getAmount();
           }
         }
       }
@@ -244,9 +244,9 @@ export default HomePage = () => {
 
       // format bezier
       let linePoints = [0, 0, 0];
-      for (let i = 0; i < currExpenses.length; i++) {
-        let index = new Date(currExpenses[i].date).getMonth() % 3;
-        linePoints[index] += currExpenses[i].amount
+      for (let i = 0; i < itemList.length; i++) {
+        let index = itemList[i].getDate().getMonth() % 3;
+        linePoints[index] += itemList[i].getAmount();
       }
 
       setLineData({
@@ -258,12 +258,12 @@ export default HomePage = () => {
 
       // format bar data
       let barPoints = [[0, 0], [0, 0], [0, 0]];
-      for (let i = 0; i < currExpenses.length; i++) {
-        let index = new Date(currExpenses[i].date).getMonth() % 3;
-        if (currExpenses[i].priority === 'need') {
-          barPoints[index][0] += currExpenses[i].amount
+      for (let i = 0; i < itemList.length; i++) {
+        let index = itemList[i].getDate().getMonth() % 3;
+        if (itemList[i].getPriority() === 'need') {
+          barPoints[index][0] += itemList[i].getAmount()
         } else {
-          barPoints[index][1] += currExpenses[i].amount
+          barPoints[index][1] += itemList[i].getAmount()
         }
       }
 
@@ -319,24 +319,24 @@ export default HomePage = () => {
       legendFontColor: legendFontColor,
       legendFontSize: legendFontSize
     };
-    for (let i = 0; i < currExpenses.length; i++) {
-      switch (currExpenses[i].category) {
+    for (let i = 0; i < itemList.length; i++) {
+      switch (itemList[i].getCategory()) {
         case 'Utilities':
-          utilityPoint.amount += currExpenses[i].amount;
+          utilityPoint.amount += itemList[i].getAmount();
           break;
         case 'Car':
-          carPoint.amount += currExpenses[i].amount;
+          carPoint.amount += itemList[i].getAmount();
           break;
         case 'Recurring':
-          recurringPoint.amount += currExpenses[i].amount;
+          recurringPoint.amount += itemList[i].getAmount();
           break;
         case 'Groceries':
-          groceriesPoint.amount += currExpenses[i].amount;
+          groceriesPoint.amount += itemList[i].getAmount();
           break;
         case 'Rent':
-          rentPoint.amount += currExpenses[i].amount;
+          rentPoint.amount += itemList[i].getAmount();
         default:
-          otherPoint.amount += currExpenses[i].amount;
+          otherPoint.amount += itemList[i].getAmount();
 
       }
     }
@@ -350,11 +350,11 @@ export default HomePage = () => {
     ]);
 
     // format bottom text
-    let currPeriod = currExpenses.reduce((total, item) => {
-      return total += item.amount;
+    let currPeriod = itemList.reduce((total, item) => {
+      return total += item.getAmount();
     }, 0);
     let prevPeriod = prevExpenses.reduce((total, item) => {
-      return total += item.amount;
+      return total += item.agetAount();
     }, 0);
     setTotal(currPeriod);
     if (currPeriod === 0 || prevPeriod === 0) {
@@ -364,16 +364,16 @@ export default HomePage = () => {
     } else {
       setDifference(`${currPeriod/prevPeriod*100-100}% more`);
     }
+
+    setLoading(false);
   }
 
   useEffect(() => {
-    const initialLoad = async () => {
-      await updateDateRange(dateRange).then( () => {
-        formatData();
-        setLoading(false);
-      });
-    }
-    initialLoad();
+    formatData();
+  }, [currExpenses, prevExpenses]);
+
+  useEffect(() => {
+    updateDateRange(dateRange);
     // cleanData();
   }, []);
 
@@ -386,7 +386,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='quarter'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            updateDateRange('quarter').then(formatData());
+            updateDateRange('quarter');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>
@@ -396,7 +396,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='month'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            updateDateRange('month').then(formatData());
+            updateDateRange('month');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>
@@ -406,7 +406,7 @@ export default HomePage = () => {
         <StyledPressable
           className={`p-2 w-3/12 rounded-lg ${dateRange==='week'?'bg-scarlet-gum-400':'bg-scarlet-gum-700'}`}
           onPress={() => {
-            updateDateRange('week').then(formatData());
+            updateDateRange('week');
           }}
         >
           <StyledText className='text-scarlet-gum-200 text-center font-semibold'>

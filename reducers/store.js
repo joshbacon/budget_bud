@@ -4,7 +4,7 @@ import { combineReducers } from 'redux';
 import expenses from './ExpenseReducer';
 
 const reducers = combineReducers({
-    expenses,
+    expenses
 });
 
 export default store = configureStore({

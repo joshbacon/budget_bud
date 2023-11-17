@@ -5,7 +5,7 @@ export default class Item {
     constructor(data) {
         this.name = data.name
         this.amount = parseFloat(data.amount);
-        this.date = data.date.toDateString();
+        this.date = new Date(data.date);
         this.category = data.category;
         this.subCategory = data.subCategory;
         this.priority = data.priority;
@@ -33,6 +33,10 @@ export default class Item {
         });
     }
 
+    getName() {
+        return this.name;
+    }
+
     getAmount() {
         return this.amount;
     }
@@ -41,8 +45,12 @@ export default class Item {
         return this.date;
     }
 
-    getType() {
-        return this.type;
+    getCategory() {
+        return this.category;
+    }
+
+    getSubCategory() {
+        return this.subCategory;
     }
 
     getPriority() {

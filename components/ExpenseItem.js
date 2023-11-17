@@ -8,30 +8,32 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 
 export default ExpenseItem = ({data}) => {
-    // const item = Item(data);
+    
+    let item = new Item(data);
+    
     return (
         <StyledView className={
             `flex-row items-center justify-between mx-2 my-1 p-3 rounded-xl
-                ${data.priority === 'need' ? 'bg-fruit-salad-500 ' : 'bg-copper-rust-500'}`
+                ${item.getPriority() === 'need' ? 'bg-fruit-salad-500' : 'bg-copper-rust-500'}`
         }>
 
             <StyledView className=''>
                 <StyledText className='text-lg text-scarlet-gum-100'>
-                    {data.name}
+                    {item.getName()}
                 </StyledText>
                 <StyledView className='flex-row'>
                     <StyledView className='z-20 min-w-icon items-center rounded-xl p-3 bg-scarlet-gum-500'>
                         <Icon
-                            name={Categories[data.category].icon}
+                            name={Categories[item.getCategory()].icon}
                             size={18}
                             color={'#ecdff0'}
                         />
                     </StyledView>
                     {
-                        data.subCategory !== '' ?
+                        item.getSubCategory() !== '' ?
                         <StyledView className='z-20 min-w-icon items-center rounded-xl p-3 ml-1 bg-scarlet-gum-500'>
                             <Icon
-                                name={Categories[data.category].subs[data.subCategory]}
+                                name={Categories[item.getCategory()].subs[item.getSubCategory()]}
                                 size={18}
                                 color={'#ecdff0'}
                             />
@@ -42,10 +44,10 @@ export default ExpenseItem = ({data}) => {
 
             <StyledView className=''>
                 <StyledText className='text-lg text-right text-scarlet-gum-100'>
-                    ${data.amount}
+                    ${item.getAmount()}
                 </StyledText>
                 <StyledText className='text-right text-scarlet-gum-100'>
-                    {data.date.split('T')[0]}
+                    {item.getDate().toDateString()}
                 </StyledText>
             </StyledView>
 

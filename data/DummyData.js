@@ -68,3 +68,35 @@ export const dummyBarData = {
 export const dummyTotal = 497.23;
 
 export const dummyDifference = '30% less';
+
+export const dummyBudgetData = {
+  'Utilities': {
+      'Power': null,
+      'Oil': null,
+      'WiFi': null
+  },
+  'Car': {
+      'Payment': null,
+      'Insurance': null,
+      'Gas': null,
+      'Maintenance': null
+    },
+  'Recurring': null,
+  'Groceries': null,
+  'Rent': null,
+  'Other': {
+    'Clothes': null,
+    'Tech': null,
+    'FastFood': null,
+    'Travel': null,
+    'Gifts': null,
+    'Misc': null
+  }
+};
+
+export const dummySavingsData = [
+  {name: '', amount: null, goal: null},
+  {name: '', amount: null, goal: null},
+  {name: '', amount: null, goal: null},
+  {name: '', amount: null, goal: null}
+];
