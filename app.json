@@ -22,10 +22,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#08130D"
-      }
+      },
+      "package": "com.pancetta.BudgetBud"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9c78d105-8a13-40df-be4e-585d13dff363"
+      }
     }
   }
 }

@@ -15,7 +15,8 @@ const inputStyle = {
     color: '#FFF',
     height: 50,
     width: '82.5%',
-    borderWidth: 2,
+    borderWidth: 0,
+    borderBottomWidth: 2,
     borderColor: '#fff',
     padding: 10
 };
@@ -24,6 +25,9 @@ export default EnterPage = ({showing, setShowing}) => {
 
     const [name, setName] = useState('');
     const [amount, setAmount] = useState('');
+
+    const [date, setDate] = useState(new Date());
+    const [showingDate, setShowingDate] = useState(false);
     
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
@@ -40,7 +44,7 @@ export default EnterPage = ({showing, setShowing}) => {
             const entry = new Item({
                 name: name,
                 amount: amount,
-                date: new Date(),
+                date: date,
                 category: category,
                 subCategory: subCategory,
                 priority: priority
@@ -51,7 +55,7 @@ export default EnterPage = ({showing, setShowing}) => {
             // and to redux to feed visuals (if added to today will always be in range)
             dispatch({
                 type: 'SET_CURR_EXPENSES',
-                payload: [...currExpenses, {...entry.data(), date: new Date().toString()}]
+                payload: [...currExpenses, {...entry.data(), date: date.toString()}]
             });
 
             // Reset inputs
@@ -72,6 +76,16 @@ export default EnterPage = ({showing, setShowing}) => {
         }
     }
 
+    function reset() {
+        setName('');
+        setAmount('');
+        setDate(new Date());
+        setShowingDate(false);
+        setCategory('');
+        setSubCategory('');
+        setPriority('');
+    }
+
     return (
         <Modal
             animationType='slide'
@@ -87,6 +101,7 @@ export default EnterPage = ({showing, setShowing}) => {
                     <StyledPressable
                         className='p-3'
                         onPress={() => {
+                            reset();
                             setShowing(false);
                         }}
                     >
@@ -136,9 +151,14 @@ export default EnterPage = ({showing, setShowing}) => {
                         </StyledView>
                     </StyledView>
 
-                    <StyledPressable className='flex-row my-5 justify-between items-center bg-scarlet-gum-600'>
+                    <StyledPressable
+                        className={`flex-row mt-5 justify-between items-center bg-scarlet-gum-600 ${showingDate ? '' : 'mb-5'}`}
+                        onPress={() => {
+                            setShowingDate(!showingDate);
+                        }}
+                    >
                         <StyledText className='ml-5 text-lg text-scarlet-gum-200'>
-                            {new Date().toDateString()}
+                            {date.toDateString()}
                         </StyledText>
                         <StyledView className='mr-1 p-3 rounded bg-scarlet-gum-700'>
                             <Icon
@@ -149,8 +169,37 @@ export default EnterPage = ({showing, setShowing}) => {
                         </StyledView>
                     </StyledPressable>
 
+                    <StyledView
+                        className={`flex-row mb-5 h-10 w-screen ${showingDate ? '' : 'hidden'}`}
+                        visible={showingDate}
+                    >
+                        <StyledPressable
+                            className='w-1/2 h-10 pt-2 items-center rounded bg-scarlet-gum-700'
+                            onPress={() => {
+                                setDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()-1));
+                            }}
+                        >
+                            <Icon
+                                name='chevron-left'
+                                size={25}
+                                color='#ecdff0'
+                            />
+                        </StyledPressable>
+                        <StyledPressable
+                            className='w-1/2 h-10 pt-2 items-center rounded bg-scarlet-gum-700'
+                            onPress={() => {
+                                setDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()+1));
+                            }}
+                        >
+                            <Icon
+                                name='chevron-right'
+                                size={25}
+                                color='#ecdff0'
+                            />
+                        </StyledPressable>
+                    </StyledView>
+
                     <StyledView className='flex-row w-full justify-evenly'>
-                        {/* idk add some extra padding or something to indicate which priority is picked */}
                         <StyledPressable
                             className={`py-3 rounded bg-fruit-salad-500 ${priority==='need'?'px-8':'px-5'}`}
                             onPress={() => {

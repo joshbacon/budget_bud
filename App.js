@@ -11,6 +11,7 @@ import store from './reducers/store';
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+
   return (
     <Provider store={store}>
       <NavigationContainer
@@ -61,6 +62,7 @@ export default function App() {
             name='Budget'
             component={BudgetPage}
             options={{
+              title: 'Monthly Budget',
               tabBarActiveTintColor: '#ecdff0',
               tabBarIcon: ({color, size}) => (
                 <Icon

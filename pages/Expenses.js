@@ -47,7 +47,7 @@ export default ExpensesPage = () => {
                     { currExpenses
                         .reverse()
                         .map(item => {
-                            return <ExpenseItem key={item.date} data={item}/>
+                            return <ExpenseItem key={item.name+item.date} data={item}/>
                         })
                     }
                 </ScrollView>

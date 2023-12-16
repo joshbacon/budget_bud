@@ -45,10 +45,6 @@ export default HomePage = () => {
   async function updateDateRange(newRange) {
     AsyncStorage.getItem('expenses').then(result => {
       if (result !== null) {
-        dispatch({
-          type: 'SET_RANGE',
-          payload: newRange
-        });
         let expenseList = JSON.parse(result);
         if (newRange === 'quarter') {
           const today = new Date();
@@ -93,6 +89,7 @@ export default HomePage = () => {
         } else { // newRange === 'week'
           const sunday = new Date();
           sunday.setDate(sunday.getDate() - sunday.getDay());
+          sunday.setHours(0, 0, 0, 0);
           dispatch({
             type: 'SET_CURR_EXPENSES',
             payload: expenseList.filter(item => {
@@ -111,10 +108,15 @@ export default HomePage = () => {
           });
         }
       }
+      dispatch({
+        type: 'SET_RANGE',
+        payload: newRange
+      });
     });
   }
 
   async function cleanData() {
+    // AsyncStorage.clear()
     AsyncStorage.getItem('expenses').then(result => {
       if (result !== null) {
         let expenseList = JSON.parse(result);
@@ -147,10 +149,17 @@ export default HomePage = () => {
       for (let i = 0; i < itemList.length; i++) {
         linePoints[itemList[i].getDate().getDay()] += itemList[i].getAmount()
       }
+      let fixedBezPoints = linePoints.map((point) => {
+        try {
+          return parseFloat(point.toFixed(2));
+        } catch(err) {
+          return point;
+        }
+      });
       setLineData({
         labels: lineLabelsWeek,
         datasets: [{
-          data: linePoints
+          data: fixedBezPoints
         }]
       });
 
@@ -163,10 +172,22 @@ export default HomePage = () => {
           barPoints[itemList[i].getDate().getDay()][1] += itemList[i].getAmount()
         }
       }
+      
+      let fixedBarPoints = barPoints.map((point) => {
+        let temp = [...point];
+        try {
+          temp[0] = parseFloat(temp[0].toFixed(2));
+        } catch(err) {}
+        try {
+          temp[1] = parseFloat(temp[1].toFixed(2));
+        } catch(err) {}
+        return temp;
+      })
+
       setBarData({
         labels: barLabelsWeek,
         legend: barLegend,
-        data: barPoints,
+        data: fixedBarPoints,
         barColors: barColors
       });
 
@@ -186,10 +207,19 @@ export default HomePage = () => {
         }
       }
 
+      let fixedBezPoints = linePoints.map((point) => {
+        try {
+          let temp = parseFloat(point.toFixed(2));
+          return temp;
+        } catch(err) {
+          return point;
+        }
+      });
+
       setLineData({
         labels: monthLabels,
         datasets: [{
-          data: linePoints
+          data: fixedBezPoints
         }]
       });
 
@@ -220,10 +250,22 @@ export default HomePage = () => {
           }
         }
       }
+
+      let fixedBarPoints = barPoints.map((point) => {
+        let temp = [...point];
+        try {
+          temp[0] = parseFloat(temp[0].toFixed(2));
+        } catch(err) {}
+        try {
+          temp[1] = parseFloat(temp[1].toFixed(2));
+        } catch(err) {}
+        return temp;
+      });
+
       setBarData({
         labels: monthLabels,
         legend: barLegend,
-        data: barPoints,
+        data: fixedBarPoints,
         barColors: barColors
       });
 
@@ -252,10 +294,19 @@ export default HomePage = () => {
         linePoints[index] += itemList[i].getAmount();
       }
 
+      let fixedBezPoints = linePoints.map((point) => {
+        try {
+          let temp = parseFloat(point.toFixed(2));
+          return temp;
+        } catch(err) {
+          return point;
+        }
+      })
+
       setLineData({
         labels: quarterLabels,
         datasets: [{
-          data: linePoints
+          data: fixedBezPoints
         }]
       });
 
@@ -269,11 +320,21 @@ export default HomePage = () => {
           barPoints[index][1] += itemList[i].getAmount()
         }
       }
+      let fixedBarPoints = barPoints.map((point) => {
+        let temp = [...point];
+        try {
+          temp[0] = parseFloat(temp[0].toFixed(2));
+        } catch(err) {}
+        try {
+          temp[1] = parseFloat(temp[1].toFixed(2));
+        } catch(err) {}
+        return temp;
+      })
 
       setBarData({
         labels: quarterLabels,
         legend: barLegend,
-        data: barPoints,
+        data: fixedBarPoints,
         barColors: barColors
       });
 
@@ -343,6 +404,24 @@ export default HomePage = () => {
 
       }
     }
+    try {
+      utilityPoint.amount = parseFloat(utilityPoint.amount.toFixed(2));
+    } catch(err) {}
+    try {
+      carPoint.amount = parseFloat(carPoint.amount.toFixed(2));
+    } catch(err) {}
+    try {
+      recurringPoint.amount = parseFloat(recurringPoint.amount.toFixed(2));
+    } catch(err) {}
+    try {
+      groceriesPoint.amount = parseFloat(groceriesPoint.amount.toFixed(2));
+    } catch(err) {}
+    try {
+      rentPoint.amount = parseFloat(rentPoint.amount.toFixed(2));
+    } catch(err) {}
+    try {
+      otherPoint.amount = parseFloat(otherPoint.amount.toFixed(2));
+    } catch(err) {}
     setPieData([
       utilityPoint,
       carPoint,
@@ -357,9 +436,13 @@ export default HomePage = () => {
       return total += item.getAmount();
     }, 0);
     let prevPeriod = prevExpenses.reduce((total, item) => {
-      return total += item.agetAount();
+      return total += item.getAmount();
     }, 0);
-    setTotal(currPeriod);
+    try {
+      setTotal(parseFloat(currPeriod.toFixed(2)));
+    } catch(err) {
+      setTotal(currPeriod);
+    }
     if (currPeriod === 0 || prevPeriod === 0) {
       setDifference('100% more');
     } else if (prevPeriod > currPeriod) {

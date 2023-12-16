@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { styled } from 'nativewind';
 import Categories from '../data/Categories';
@@ -7,12 +8,14 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 
 export default BudgetItem = ({category, amount, limit}) => {
+
     if (limit === 0 || limit === null) {
         limit = amount;
         if (amount === 0 || amount === null) {
             limit = 1;
         }
     }
+    
     return (
         <StyledView className="z-0 relative flex-row w-11/12 mt-2 p-3 w-fill rounded-xl overflow-hidden bg-scarlet-gum-700">
             <StyledView

@@ -2,5 +2,6 @@
     "cSpell.words": [
         "nativewind",
         "Pressable"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

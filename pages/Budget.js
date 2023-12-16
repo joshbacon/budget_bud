@@ -21,7 +21,8 @@ const inputStyle = {
   color: '#FFF',
   height: 50,
   width: '82.5%',
-  borderWidth: 2,
+  borderWidth: 0,
+  borderBottomWidth: 2,
   borderColor: '#fff',
   padding: 10
 };
@@ -58,7 +59,9 @@ export default BudgetPage = () => {
   /* Budget Data related functions */
 
   function changeBudgetAmount(subCat, amount) {
-    if (amount === '') amount = null;
+    if (amount === '') {
+      amount = null;
+    }
     let tempData = {...budgetData};
     if (subCat !== null) {
       tempData[selectedCategory][subCat] = amount;
@@ -69,7 +72,25 @@ export default BudgetPage = () => {
   }
 
   function saveBudgetData() {
-    AsyncStorage.setItem('budget', JSON.stringify(budgetData));
+    let floatData = {...budgetData};
+    for (let [key, sec] of Object.entries(floatData)) {
+
+      if (sec === null) continue;
+      if (typeof sec === 'object') {
+        for (let [sKey, sSec] of Object.entries(sec)) {
+          if (sSec === null) continue;
+          try {
+            floatData[key][sKey] = parseFloat(parseFloat(sSec).toFixed(2));
+          } catch(err) {}
+        }
+      } else {
+        try {
+          floatData[key] = parseFloat(parseFloat(sec).toFixed(2));
+        } catch(err) {}
+      }
+    }
+    setBudgetData(floatData);
+    AsyncStorage.setItem('budget', JSON.stringify(floatData));
   }
 
   /* Savings Data related functions */
@@ -153,10 +174,22 @@ export default BudgetPage = () => {
                     color={'#ecdff0'}
                   />
                   <TextInput
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle,
+                      borderColor: `${
+                        currExpenses
+                        .reduce((total, expense) => {
+                          if (expense.category === selectedCategory)
+                            return total += expense.amount;
+                          else return total;
+                        }, 0) > budgetData[selectedCategory] ?
+                        '#bf747a' :
+                        '#479159'
+                      }`
+                    }}
                     keyboardType='numeric'
-                    value={budgetData[selectedCategory]}
-                    onChangeText={newAmount => {
+                    value={budgetData[selectedCategory]?.toString()}
+                    onChangeText={ newAmount => {
                       changeBudgetAmount(null, newAmount);
                     }}
                   />
@@ -184,9 +217,9 @@ export default BudgetPage = () => {
                               '#479159'
                             }`
                           }}
-                          value={budgetData[selectedCategory][key]}
+                          value={budgetData[selectedCategory][key]?.toString()}
                           keyboardType='numeric'
-                          onChangeText={newAmount => {
+                          onChangeText={ newAmount => {
                             changeBudgetAmount(key, newAmount);
                           }}
                         />
@@ -233,7 +266,7 @@ export default BudgetPage = () => {
               return total += expense.category === 'Utilities' ? expense.amount : 0;
             }, 0)}
             limit={Object.entries(budgetData.Utilities).reduce((total, limit) => {
-              return total += limit[1];
+              return total += limit[1] ?? 0;
             }, 0)}
           />
         </StyledPressable>
@@ -250,7 +283,7 @@ export default BudgetPage = () => {
               return total += expense.category === 'Car' ? expense.amount : 0;
             }, 0)}
             limit={Object.entries(budgetData.Car).reduce((total, limit) => {
-              return total += limit[1];
+              return total += limit[1] ?? 0;
             }, 0)}
           />
         </StyledPressable>
@@ -266,7 +299,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Recurring' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Recurring}
+            limit={budgetData.Recurring ?? 0}
           />
         </StyledPressable>
         <StyledPressable
@@ -280,7 +313,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Groceries' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Groceries}
+            limit={budgetData.Groceries ?? 0}
           />
         </StyledPressable>
         <StyledPressable
@@ -295,7 +328,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Rent' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Rent}
+            limit={budgetData.Rent ?? 0}
           />
         </StyledPressable>
         <StyledPressable
@@ -311,7 +344,7 @@ export default BudgetPage = () => {
               return total += expense.category === 'Other' ? expense.amount : 0;
             }, 0)}
             limit={Object.entries(budgetData.Other).reduce((total, limit) => {
-              return total += limit[1];
+              return total += limit[1] ?? 0;
             }, 0)}
           />
         </StyledPressable>
@@ -349,7 +382,7 @@ export default BudgetPage = () => {
                         }}
                       />
                     </StyledView>
-                    <StyledView className='w-6/12 bg-scarlet-gum-300'>
+                    <StyledView className='w-6/12 ml-1 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
                         placeholder='goal'
@@ -399,7 +432,7 @@ export default BudgetPage = () => {
                         }}
                       />
                     </StyledView>
-                    <StyledView className='w-6/12 bg-scarlet-gum-300'>
+                    <StyledView className='w-6/12 ml-1 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
                         placeholder='goal'
@@ -449,7 +482,7 @@ export default BudgetPage = () => {
                         }}
                       />
                     </StyledView>
-                    <StyledView className='w-6/12 bg-scarlet-gum-300'>
+                    <StyledView className='w-6/12 ml-1 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
                         placeholder='goal'
@@ -499,7 +532,7 @@ export default BudgetPage = () => {
                         }}
                       />
                     </StyledView>
-                    <StyledView className='w-6/12 bg-scarlet-gum-300'>
+                    <StyledView className='w-6/12 ml-1 bg-scarlet-gum-300'>
                       <TextInput
                         style={{...inputStyle, width: '100%'}}
                         placeholder='goal'
