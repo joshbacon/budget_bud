@@ -44,7 +44,7 @@ export default ExpensesPage = () => {
 
             <SafeAreaView>
                 <ScrollView>
-                    { currExpenses
+                    { [...currExpenses]
                         .reverse()
                         .map(item => {
                             return <ExpenseItem key={item.name+item.date} data={item}/>

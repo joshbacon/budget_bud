@@ -34,21 +34,26 @@ export default HomePage = () => {
   const prevExpenses = useSelector(state => state.expenses.prevExpenses);
   const dispatch = useDispatch();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [pieData, setPieData] = useState(dummyPieData);
   const [lineData, setLineData] = useState(dummyLineData);
   const [barData, setBarData] = useState(dummyBarData);
   const [total, setTotal] = useState(dummyTotal);
   const [difference, setDifference] = useState(dummyDifference);
+  
+  console.log(`home - ${dateRange}`);
+  console.log(currExpenses);
 
   async function updateDateRange(newRange) {
+    if (loading) return;
+    setLoading(true);
     AsyncStorage.getItem('expenses').then(result => {
       if (result !== null) {
         let expenseList = JSON.parse(result);
         if (newRange === 'quarter') {
           const today = new Date();
-          const quarter = (today.getMonth()-1)/3+1;
+          const quarter = Math.floor((new Date().getMonth() + 3) / 3);
           const start = new Date(today.getFullYear(), (quarter-1)*3+1, 1);
           start.setHours(0, 0, 0, 0);
           dispatch({
@@ -113,6 +118,7 @@ export default HomePage = () => {
         payload: newRange
       });
     });
+    setLoading(false);
   }
 
   async function cleanData() {
@@ -126,7 +132,7 @@ export default HomePage = () => {
         let currQuarter = Math.floor(today.getMonth() /3);
         
         let startOfLastQuarter = new Date(today.getFullYear(), currQuarter * 3, 1); 
-        startOfLastQuarter.setMonth(startOfLastQuarter.getMonth() -3)
+        startOfLastQuarter.setMonth(startOfLastQuarter.getMonth() -3);
         startOfLastQuarter.setHours(0,0,0,0);
 
         expenseList.filter(item => {
@@ -138,17 +144,28 @@ export default HomePage = () => {
     });
   }
 
-  function formatData() {
-    setLoading(true);
-
-    let itemList = [...currExpenses].map(item => new Item(item));
+  function formatData(dateRange, currRange, prevRange) {
+    let itemList = [...currRange].map(item => new Item(item));
 
     if (dateRange === 'week') {
-      // format bezier
+      
       let linePoints = [0, 0, 0, 0, 0, 0, 0];
+      let barPoints = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
+
       for (let i = 0; i < itemList.length; i++) {
-        linePoints[itemList[i].getDate().getDay()] += itemList[i].getAmount()
+
+        // format bezier
+        linePoints[itemList[i].getDate().getDay()] += itemList[i].getAmount();
+
+        // format bar
+        if (itemList[i].getPriority() === 'need') {
+          barPoints[itemList[i].getDate().getDay()][0] += itemList[i].getAmount();
+        } else {
+          barPoints[itemList[i].getDate().getDay()][1] += itemList[i].getAmount();
+        }
       }
+
+      // Round line points to 2 decmial points
       let fixedBezPoints = linePoints.map((point) => {
         try {
           return parseFloat(point.toFixed(2));
@@ -162,17 +179,8 @@ export default HomePage = () => {
           data: fixedBezPoints
         }]
       });
-
-      // format bar
-      let barPoints = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
-      for (let i = 0; i < itemList.length; i++) {
-        if (itemList[i].getPriority() === 'need') {
-          barPoints[itemList[i].getDate().getDay()][0] += itemList[i].getAmount()
-        } else {
-          barPoints[itemList[i].getDate().getDay()][1] += itemList[i].getAmount()
-        }
-      }
       
+      // Round bar points to 2 decmial points
       let fixedBarPoints = barPoints.map((point) => {
         let temp = [...point];
         try {
@@ -192,6 +200,7 @@ export default HomePage = () => {
       });
 
     } else if (dateRange === 'month') {
+
       // format bezier
       let linePoints = [0, 0, 0, 0];
       for (let i = 0; i < itemList.length; i++) {
@@ -270,9 +279,10 @@ export default HomePage = () => {
       });
 
     } else { // dateRange === 'quarter'
+
       // same labels for line and bar
       let quarterLabels = Q1Labels;
-      let currQuarter = (new Date().getMonth() - 1) / 3 + 1;
+      let currQuarter = Math.floor((new Date().getMonth() + 3) / 3);
       switch (currQuarter) {
         case 2:
           quarterLabels = Q2Labels
@@ -436,7 +446,7 @@ export default HomePage = () => {
       return total += item.getAmount();
     }, 0);
     let prevPeriod = prevExpenses.reduce((total, item) => {
-      return total += item.getAmount();
+      return total += item.amount;
     }, 0);
     try {
       setTotal(parseFloat(currPeriod.toFixed(2)));
@@ -446,17 +456,15 @@ export default HomePage = () => {
     if (currPeriod === 0 || prevPeriod === 0) {
       setDifference('100% more');
     } else if (prevPeriod > currPeriod) {
-      setDifference(`${100-currPeriod/prevPeriod*100}% less`);
+      setDifference(`${(100-currPeriod/prevPeriod*100).toFixed(2)}% less`);
     } else {
-      setDifference(`${currPeriod/prevPeriod*100-100}% more`);
+      setDifference(`${(currPeriod/prevPeriod*100-100).toFixed(2)}% more`);
     }
-
-    setLoading(false);
   }
 
   useEffect(() => {
-    formatData();
-  }, [currExpenses, prevExpenses]);
+    formatData(dateRange, currExpenses, prevExpenses);
+  }, [dateRange, currExpenses, prevExpenses]);
 
   useEffect(() => {
     cleanData().then(updateDateRange(dateRange));

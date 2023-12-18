@@ -41,6 +41,7 @@ const chartConfig = {
 
 export default BudgetPage = () => {
 
+  const dateRange = useSelector(state => state.expenses.dateRange);
   const currExpenses = useSelector(state => state.expenses.currExpenses);
 
   const [budgetData, setBudgetData] = useState(dummyBudgetData);
@@ -97,7 +98,7 @@ export default BudgetPage = () => {
 
   function setSavingsName(index, name) {
     let tempData = [...savingsData];
-    tempData[index].name = name;
+    tempData[index].name = name === '' ? null : name;
     setSavingsData(tempData);
   }
 
@@ -121,7 +122,6 @@ export default BudgetPage = () => {
     let tempData = [...savingsData];
     tempData[index] = {name: '', amount: null, goal: null};
     setSavingsData(tempData);
-    saveSavingsData();
   }
 
   /* Hooks */
@@ -129,9 +129,15 @@ export default BudgetPage = () => {
   useEffect(() => {
     // Reformat data for the savings progress chart
     let tempData = savingsData
-      .filter(s => s.amount !== null && s.goal !== null )
-      .map(s => s.amount / s.goal)
-    if (tempData.length !== 0 ) setProgressData(tempData);
+      .filter(s => (s.amount !== null && s.goal !== null))
+      .map(s => (s.amount / s.goal))
+      .map(s => {
+        if (s === Infinity) return 1;
+        if (isNaN(s)) return 0;
+        if (s > 1) return 1;
+        return s;
+      });
+    if (tempData.length !== 0) setProgressData(tempData);
   }, [savingsData]);
 
   useEffect(() => {
@@ -182,7 +188,7 @@ export default BudgetPage = () => {
                           if (expense.category === selectedCategory)
                             return total += expense.amount;
                           else return total;
-                        }, 0) > budgetData[selectedCategory] ?
+                        }, 0) > budgetData[selectedCategory] * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1) ?
                         '#bf747a' :
                         '#479159'
                       }`
@@ -212,7 +218,7 @@ export default BudgetPage = () => {
                                 if (expense.category === selectedCategory && expense.subCategory === key)
                                   return total += expense.amount;
                                 else return total;
-                              }, 0) > budgetData[selectedCategory][key] ?
+                              }, 0) > budgetData[selectedCategory][key] * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1) ?
                               '#bf747a' :
                               '#479159'
                             }`
@@ -243,8 +249,8 @@ export default BudgetPage = () => {
               </StyledView>
             </StyledView>
             { currExpenses
-              .reverse()
               .filter(e => e.category === selectedCategory)
+              .reverse()
               .map(item => {
                 return <ExpenseItem key={item.date} data={item}/>
               })
@@ -267,7 +273,7 @@ export default BudgetPage = () => {
             }, 0)}
             limit={Object.entries(budgetData.Utilities).reduce((total, limit) => {
               return total += limit[1] ?? 0;
-            }, 0)}
+            }, 0) * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
         <StyledPressable
@@ -284,7 +290,7 @@ export default BudgetPage = () => {
             }, 0)}
             limit={Object.entries(budgetData.Car).reduce((total, limit) => {
               return total += limit[1] ?? 0;
-            }, 0)}
+            }, 0) * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
         <StyledPressable
@@ -299,7 +305,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Recurring' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Recurring ?? 0}
+            limit={budgetData.Recurring * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
         <StyledPressable
@@ -313,7 +319,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Groceries' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Groceries ?? 0}
+            limit={budgetData.Groceries * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
         <StyledPressable
@@ -328,7 +334,7 @@ export default BudgetPage = () => {
             amount={currExpenses.reduce((total, expense) => {
               return total += expense.category === 'Rent' ? expense.amount : 0;
             }, 0)}
-            limit={budgetData.Rent ?? 0}
+            limit={budgetData.Rent * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
         <StyledPressable
@@ -345,7 +351,7 @@ export default BudgetPage = () => {
             }, 0)}
             limit={Object.entries(budgetData.Other).reduce((total, limit) => {
               return total += limit[1] ?? 0;
-            }, 0)}
+            }, 0) * (dateRange === 'week' ? 0.25 : dateRange === 'quarter' ? 3 : 1)}
           />
         </StyledPressable>
       </StyledView>

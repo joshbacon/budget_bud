@@ -34,8 +34,12 @@ export default EnterPage = ({showing, setShowing}) => {
 
     const [priority, setPriority] = useState('');
 
+    const dateRange = useSelector(state => state.expenses.dateRange);
     const currExpenses = useSelector(state => state.expenses.currExpenses);
     const dispatch = useDispatch();
+
+    console.log(`enter - ${dateRange}`);
+    console.log(currExpenses);
 
     function saveEntry() {
         if (name !== '' && amount !== '' && priority !== '' && category !== '' &&
@@ -49,14 +53,25 @@ export default EnterPage = ({showing, setShowing}) => {
                 subCategory: subCategory,
                 priority: priority
             });
-
             // save new entry to local memory for later
             entry.save();
-            // and to redux to feed visuals (if added to today will always be in range)
-            dispatch({
-                type: 'SET_CURR_EXPENSES',
-                payload: [...currExpenses, {...entry.data(), date: date.toString()}]
-            });
+            // and to redux to feed visuals (check if in current range first)
+            const sunday = new Date();
+            const quarter = Math.floor((new Date().getMonth() + 3) / 3);
+            const start = new Date(sunday.getFullYear(), (quarter-1)*3+1, 1);
+            start.setHours(0, 0, 0, 0);
+            const first = new Date(sunday.getFullYear(), sunday.getMonth(), 1);
+            first.setHours(0, 0, 0, 0);
+            sunday.setDate(sunday.getDate() - sunday.getDay());
+            sunday.setHours(0, 0, 0, 0);
+            if ( (dateRange === 'week' && entry.getDate() >= sunday) ||
+                 (dateRange === 'month' && entry.getDate() >= first) ||
+                 (dateRange === 'quarter' && entry.getDate() >= start) ) {
+                    dispatch({
+                        type: 'SET_CURR_EXPENSES',
+                        payload: [...currExpenses, {...entry.data(), date: date.toString()}]
+                    });
+            }
 
             // Reset inputs
             setName('');

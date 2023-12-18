@@ -62,7 +62,7 @@ export default function App() {
             name='Budget'
             component={BudgetPage}
             options={{
-              title: 'Monthly Budget',
+              title: 'Budget (Adjusted)',
               tabBarActiveTintColor: '#ecdff0',
               tabBarIcon: ({color, size}) => (
                 <Icon
